@@ -16,5 +16,12 @@ class ConfigurationFieldTest extends FunSuite with GoPluginWritersAndReaders {
         |    "part-of-identity" : true
         |  }
         |}""".stripMargin)
+
+    assert(pretty(asJValue(StatusResponse(status = true, Seq("message")))) ===
+      """{
+        |  "status" : "success",
+        |  "messages" : [ "message" ]
+        |}""".stripMargin)
+
   }
 }
