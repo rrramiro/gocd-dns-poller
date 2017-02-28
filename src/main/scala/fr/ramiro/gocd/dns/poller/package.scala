@@ -8,11 +8,10 @@ import org.json4s.jackson.JsonMethods._
 
 package object poller {
   case class GoField(
-    name: String,
     displayName: String,
     displayOrder: Int,
-    partOfIdentity: Boolean = true,
-    required: Boolean = true
+    partOfIdentity: Boolean,
+    required: Boolean
   ) extends annotation.StaticAnnotation
 
   case class RepositoryConfigurationField(
@@ -37,17 +36,28 @@ package object poller {
   case class StatusResponse(status: Boolean, messages: Seq[String])
 
   import scala.reflect.runtime.universe._
+  def listGoFields[T](implicit t: TypeTag[T]): List[(String, GoField)] = {
+    def getGoFieldInstanceParams(goFieldAnnotation: Annotation) = {
+      goFieldAnnotation.tree.children.tail.collect {
+        case a if a.productElement(0).isInstanceOf[Constant] =>
+          a.productElement(0).asInstanceOf[Constant].value
+      }
+    }
 
-  def listGoFields[T: TypeTag]: List[(TermSymbol, Annotation)] = {
-    // a field is a Term that is a Var or a Val
+    def getGoFieldInstance(goFieldAnnotation: Annotation): GoField = {
+      t.mirror
+        .reflectClass(goFieldAnnotation.tree.tpe.typeSymbol.asClass)
+        .reflectConstructor(goFieldAnnotation.tree.tpe.decl(termNames.CONSTRUCTOR).asMethod)(getGoFieldInstanceParams(goFieldAnnotation): _*)
+        .asInstanceOf[GoField]
+    }
+
     typeOf[T].members
       .collect { case s: TermSymbol => s }
       .filter(s => s.isVal || s.isVar)
       .flatMap {
         f =>
           f.annotations.find(_.tree.tpe =:= typeOf[GoField]).map {
-            goField =>
-              f -> goField
+            f.name.toString -> getGoFieldInstance(_)
           }
       }.toList
   }
@@ -55,7 +65,7 @@ package object poller {
   trait GoPluginWritersAndReaders extends DefaultWriters with DefaultReaders {
 
     implicit object StatusResponseWriter extends Writer[StatusResponse] {
-      override def write(obj: StatusResponse): JValue = ("status" -> (if(obj.status) "success" else "failure") ) ~ ("messages" -> obj.messages)
+      override def write(obj: StatusResponse): JValue = ("status" -> (if (obj.status) "success" else "failure")) ~ ("messages" -> obj.messages)
     }
 
     implicit object ValidateResponseElementWriter extends Writer[ValidationError] {
