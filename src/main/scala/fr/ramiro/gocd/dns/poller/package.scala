@@ -54,6 +54,10 @@ package object poller {
 
   trait GoPluginWritersAndReaders extends DefaultWriters with DefaultReaders {
 
+    implicit object StatusResponseWriter extends Writer[StatusResponse] {
+      override def write(obj: StatusResponse): JValue = ("status" -> (if(obj.status) "success" else "failure") ) ~ ("messages" -> obj.messages)
+    }
+
     implicit object ValidateResponseElementWriter extends Writer[ValidationError] {
       override def write(obj: ValidationError): JValue = ("key" -> obj.key) ~ ("message" -> obj.message)
     }

@@ -1,8 +1,8 @@
 import Dependencies._
 
-name := "Hello"
+name := "gocd-dns-poller"
 
-organization := "com.example"
+organization := "fr.ramiro"
 
 scalaVersion := "2.12.1"
 
@@ -12,5 +12,6 @@ libraryDependencies ++= Seq(
   scalaTest % Test,
   "cd.go.plugin" % "go-plugin-api" % "17.2.0",
   "org.json4s" %% "json4s-jackson" % "3.5.0",
-  "org.scala-lang" % "scala-reflect" % scalaVersion.value
+  "org.scala-lang" % "scala-reflect" % scalaVersion.value,
+  "dnsjava" % "dnsjava" % "2.1.8"
 )
