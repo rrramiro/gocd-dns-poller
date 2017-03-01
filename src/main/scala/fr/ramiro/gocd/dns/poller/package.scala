@@ -7,12 +7,7 @@ import org.json4s.JsonDSL._
 import org.json4s.jackson.JsonMethods._
 
 package object poller {
-  case class GoField(
-    displayName: String,
-    displayOrder: Int,
-    partOfIdentity: Boolean,
-    required: Boolean
-  ) extends annotation.StaticAnnotation
+
 
   case class RepositoryConfigurationField(
     name: String,
@@ -35,32 +30,7 @@ package object poller {
 
   case class StatusResponse(status: Boolean, messages: Seq[String])
 
-  import scala.reflect.runtime.universe._
-  def listGoFields[T](implicit t: TypeTag[T]): List[(String, GoField)] = {
-    def getGoFieldInstanceParams(goFieldAnnotation: Annotation) = {
-      goFieldAnnotation.tree.children.tail.collect {
-        case a if a.productElement(0).isInstanceOf[Constant] =>
-          a.productElement(0).asInstanceOf[Constant].value
-      }
-    }
 
-    def getGoFieldInstance(goFieldAnnotation: Annotation): GoField = {
-      t.mirror
-        .reflectClass(goFieldAnnotation.tree.tpe.typeSymbol.asClass)
-        .reflectConstructor(goFieldAnnotation.tree.tpe.decl(termNames.CONSTRUCTOR).asMethod)(getGoFieldInstanceParams(goFieldAnnotation): _*)
-        .asInstanceOf[GoField]
-    }
-
-    typeOf[T].members
-      .collect { case s: TermSymbol => s }
-      .filter(s => s.isVal || s.isVar)
-      .flatMap {
-        f =>
-          f.annotations.find(_.tree.tpe =:= typeOf[GoField]).map {
-            f.name.toString -> getGoFieldInstance(_)
-          }
-      }.toList
-  }
 
   trait GoPluginWritersAndReaders extends DefaultWriters with DefaultReaders {
 
