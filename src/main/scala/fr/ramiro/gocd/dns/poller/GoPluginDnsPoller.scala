@@ -2,10 +2,10 @@ package fr.ramiro.gocd.dns.poller
 
 import java.net.InetAddress
 
-import com.thoughtworks.go.plugin.api.{GoApplicationAccessor, GoPluginIdentifier}
+import com.thoughtworks.go.plugin.api.GoApplicationAccessor
 import fr.ramiro.gocd.plugins._
 
-class GoPluginDnsPoller extends PollerPlugin[DnsServerConfig, DnsRecordConfig] {
+class GoPluginDnsPoller extends PollerPlugin[DnsServerConfig, DnsRecordConfig]("GoPluginDnsPoller", "17.0") {
 
   override def validateRepositoryConfiguration(repositoryConfig: DnsServerConfig): Seq[ValidationError] = {
     if(repositoryConfig.dnsServer.isEmpty){
@@ -34,11 +34,6 @@ class GoPluginDnsPoller extends PollerPlugin[DnsServerConfig, DnsRecordConfig] {
       case t: Throwable =>
         StatusResponse(status = false, Seq(t.getMessage))
     }
-  }
-
-  override def pluginIdentifier(): GoPluginIdentifier = {
-    import scala.collection.JavaConverters._
-    new GoPluginIdentifier("GoPluginDnsPoller", Seq("17.0").asJava)
   }
 
   override def initializeGoApplicationAccessor(goApplicationAccessor: GoApplicationAccessor): Unit = {}

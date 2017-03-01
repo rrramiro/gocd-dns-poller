@@ -1,6 +1,6 @@
 package fr.ramiro.gocd.plugins
 
-import com.thoughtworks.go.plugin.api.GoPlugin
+import com.thoughtworks.go.plugin.api.{GoPlugin, GoPluginIdentifier}
 import com.thoughtworks.go.plugin.api.request.GoPluginApiRequest
 import com.thoughtworks.go.plugin.api.response.DefaultGoPluginApiResponse.{error, success}
 import com.thoughtworks.go.plugin.api.response.GoPluginApiResponse
@@ -9,7 +9,7 @@ import org.json4s.jackson.JsonMethods.{asJValue, compact}
 
 import scala.reflect.runtime.universe._
 //(implicit repositoryConfigWriter: Writer[RepositoryConfig], packageConfigWriter: Writer[PackageConfig])
-abstract class PollerPlugin[RepositoryConfig <: PluginConfig : TypeTag, PackageConfig <: PluginConfig : TypeTag] extends GoPlugin with DefaultReaders with DefaultWriters {
+abstract class PollerPlugin[RepositoryConfig <: PluginConfig : TypeTag, PackageConfig <: PluginConfig : TypeTag](pluginName: String, managedVersions: String*) extends GoPlugin with DefaultReaders with DefaultWriters {
   private val repositoryFields = GoField.listGoFields[RepositoryConfig]
   private val packageFields = GoField.listGoFields[PackageConfig]
 
@@ -49,6 +49,11 @@ abstract class PollerPlugin[RepositoryConfig <: PluginConfig : TypeTag, PackageC
         Some(error(t.getMessage))
     }
   }.orNull
+
+  override def pluginIdentifier(): GoPluginIdentifier = {
+    import scala.collection.JavaConverters._
+    new GoPluginIdentifier(pluginName, managedVersions.asJava)
+  }
 
   def toRepositoryConfig(requestBody: String): RepositoryConfig = ???
 
