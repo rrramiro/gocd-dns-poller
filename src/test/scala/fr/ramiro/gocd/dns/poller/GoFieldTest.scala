@@ -1,6 +1,7 @@
 package fr.ramiro.gocd.dns.poller
 
-import fr.ramiro.gocd.plugins.GoField
+import fr.ramiro.gocd.plugins.{GoField, StatusResponse}
+import org.json4s.jackson.JsonMethods.{asJValue, pretty}
 import org.scalatest.FunSuite
 
 import scala.annotation.meta.field
@@ -18,5 +19,37 @@ class GoFieldTest extends FunSuite {
     )
     val annotations = GoField.listGoFields[ConfigurationObject].toMap
     assert(annotations.values.toSet === expected)
+  }
+
+  test("To JSON"){
+    assert(pretty(asJValue(Seq(GoField("DNS_SERVER", "DNS Server", 0)))) ===
+    """{
+      |  "DNS_SERVER" : {
+      |    "display-name" : "DNS Server",
+      |    "display-order" : 0,
+      |    "required" : true,
+      |    "part-of-identity" : true
+      |  }
+      |}""".stripMargin)
+
+
+    assert(pretty(asJValue(Seq(GoField("DNS_SERVER", "DNS Server", 0, Some("default"), true, true)))) ===
+    """{
+      |  "DNS_SERVER" : {
+      |    "display-name" : "DNS Server",
+      |    "display-order" : 0,
+      |    "required" : true,
+      |    "part-of-identity" : true,
+      |    "default-value" : "default"
+      |  }
+      |}""".stripMargin)
+
+
+    assert(pretty(asJValue(StatusResponse(status = true, Seq("message")))) ===
+    """{
+      |  "status" : "success",
+      |  "messages" : [ "message" ]
+      |}""".stripMargin)
+
   }
 }

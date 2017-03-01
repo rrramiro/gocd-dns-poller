@@ -1,9 +1,12 @@
 package fr.ramiro.gocd.plugins
 
+import org.json4s.{JObject, JValue, Writer}
+
 case class GoField(
   name: String,
   displayName: String,
   displayOrder: Int = 0,
+  defaultValue: Option[String] = None,
   partOfIdentity: Boolean = true,
   required: Boolean = true
 ) extends annotation.StaticAnnotation
@@ -37,5 +40,26 @@ object GoField{
             f.name.toString -> getGoFieldInstance(_)
           }
       }.toList
+  }
+
+  implicit object ConfigurationFieldWriter extends Writer[Seq[GoField]] {
+    import org.json4s.JsonDSL._
+
+    override def write(fields: Seq[GoField]): JValue = {
+      fields.foldRight(JObject()) {
+        (obj, a) =>
+          a ~ {
+            obj.name -> {
+              ("display-name" -> obj.displayName) ~
+              ("display-order" -> obj.displayOrder) ~
+              ("required" -> obj.required) ~
+              ("part-of-identity" -> obj.partOfIdentity) ~
+              obj.defaultValue.fold(JObject()) {
+                "default-value" -> _
+              }
+            }
+          }
+      }
+    }
   }
 }
