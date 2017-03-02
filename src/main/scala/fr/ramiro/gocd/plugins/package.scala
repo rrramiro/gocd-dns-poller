@@ -1,6 +1,6 @@
 package fr.ramiro.gocd
 
-import org.json4s.{JValue, Writer}
+import org.json4s.{ JValue, Writer }
 import org.json4s.JsonDSL._
 
 package object plugins {
@@ -14,7 +14,7 @@ package object plugins {
 
   case class StatusResponse(status: Boolean, messages: Seq[String])
 
-  object StatusResponse{
+  object StatusResponse {
     implicit object StatusResponseWriter extends Writer[StatusResponse] {
       override def write(obj: StatusResponse): JValue = ("status" -> (if (obj.status) "success" else "failure")) ~ ("messages" -> obj.messages)
     }

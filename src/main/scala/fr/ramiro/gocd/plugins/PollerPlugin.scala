@@ -1,17 +1,18 @@
 package fr.ramiro.gocd.plugins
 
-import com.thoughtworks.go.plugin.api.{GoPlugin, GoPluginIdentifier}
+import com.thoughtworks.go.plugin.api.{ GoPlugin, GoPluginIdentifier }
 import com.thoughtworks.go.plugin.api.request.GoPluginApiRequest
-import com.thoughtworks.go.plugin.api.response.DefaultGoPluginApiResponse.{error, success}
+import com.thoughtworks.go.plugin.api.response.DefaultGoPluginApiResponse.{ error, success }
 import com.thoughtworks.go.plugin.api.response.GoPluginApiResponse
 import org.json4s.{ DefaultReaders, DefaultWriters }
-import org.json4s.jackson.JsonMethods.{asJValue, compact}
+import org.json4s.jackson.JsonMethods.{ asJValue, compact }
+import org.json4s._
+import org.json4s.JsonDSL._
+import org.json4s.jackson.JsonMethods._
 import scala.reflect.runtime.universe._
 
-abstract class PollerPlugin[RepositoryConfig <: PluginConfig, PackageConfig <: PluginConfig]
-  (pluginName: String, managedVersions: String*)
-  (implicit rctt: TypeTag[RepositoryConfig], pctt: TypeTag[PackageConfig], rcmf: scala.reflect.Manifest[RepositoryConfig], pcmf: scala.reflect.Manifest[PackageConfig])
-  extends GoPlugin with DefaultReaders with DefaultWriters {
+abstract class PollerPlugin[RepositoryConfig, PackageConfig](pluginName: String, managedVersions: String*)(implicit rctt: TypeTag[RepositoryConfig], pctt: TypeTag[PackageConfig], rcmf: scala.reflect.Manifest[RepositoryConfig], pcmf: scala.reflect.Manifest[PackageConfig])
+    extends GoPlugin with DefaultReaders with DefaultWriters {
   private val repositoryFields: Seq[(String, GoField)] = GoField.listGoFields[RepositoryConfig]
   private val packageFields = GoField.listGoFields[PackageConfig]
 
@@ -19,7 +20,7 @@ abstract class PollerPlugin[RepositoryConfig <: PluginConfig, PackageConfig <: P
     try {
       requestMessage.requestName match {
         case "repository-configuration" => Some(success(compact(asJValue(repositoryFields.map { _._2 }))))
-        case "package-configuration"    => Some(success(compact(asJValue(packageFields.map { _._2 }))))
+        case "package-configuration" => Some(success(compact(asJValue(packageFields.map { _._2 }))))
         case "validate-repository-configuration" => Some(success(compact(asJValue(
           validateRepositoryConfiguration(
           toRepositoryConfig(requestMessage.requestBody)
@@ -42,9 +43,9 @@ abstract class PollerPlugin[RepositoryConfig <: PluginConfig, PackageConfig <: P
             toPackageConfig(requestMessage.requestBody)
           )
         ))))
-        case "latest-revision"       => None
+        case "latest-revision" => None
         case "latest-revision-since" => None
-        case _                       => None
+        case _ => None
       }
     } catch {
       case t: Throwable =>
@@ -57,24 +58,16 @@ abstract class PollerPlugin[RepositoryConfig <: PluginConfig, PackageConfig <: P
     new GoPluginIdentifier(pluginName, managedVersions.asJava)
   }
 
-  import org.json4s._
-  import org.json4s.JsonDSL._
-  import org.json4s.jackson.JsonMethods._
-
-  private def requestToJObject[T](requestBody: String, label: String, keyToField: String => String)(implicit formats: Formats, mf: scala.reflect.Manifest[T]): T = {
+  private def requestToJObject[T](requestBody: String, label: String, keyToField: String => String)(implicit mf: scala.reflect.Manifest[T]): T = {
     (parse(StringInput(requestBody)) \ label)
       .as[Map[String, Map[String, String]]]
       .foldLeft(JObject()) {
         case (a, (key, property)) =>
           a ~ (keyToField(key) -> property("value"))
-      }.extract[T]
+      }.extract[T](DefaultFormats, mf)
   }
 
-  private def paramsToField(fields: Seq[(String, GoField)]): (String => String) = {
-    fields.map { case (field, param) => param.name -> field }.toMap
-  }
-
-  implicit val formats: Formats = DefaultFormats
+  private def paramsToField(fields: Seq[(String, GoField)]): (String => String) = fields.map { case (field, param) => param.name -> field }.toMap
 
   def toRepositoryConfig(requestBody: String): RepositoryConfig = requestToJObject[RepositoryConfig](requestBody, "repository-configuration", paramsToField(repositoryFields))
 

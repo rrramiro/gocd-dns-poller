@@ -8,7 +8,7 @@ import fr.ramiro.gocd.plugins._
 class GoPluginDnsPoller extends PollerPlugin[DnsServerConfig, DnsRecordConfig]("GoPluginDnsPoller", "17.0") {
 
   override def validateRepositoryConfiguration(repositoryConfig: DnsServerConfig): Seq[ValidationError] = {
-    if(repositoryConfig.dnsServer.isEmpty){
+    if (repositoryConfig.dnsServer.isEmpty) {
       Seq(ValidationError("DNS_SERVER", "Dns Server shouldn't be empty"))
     } else {
       Seq.empty
@@ -16,7 +16,7 @@ class GoPluginDnsPoller extends PollerPlugin[DnsServerConfig, DnsRecordConfig]("
   }
 
   override def validatePackageConfiguration(repositoryConfig: DnsServerConfig, packageConfig: DnsRecordConfig): Seq[ValidationError] = {
-    if(packageConfig.dnsRecord.isEmpty){
+    if (packageConfig.dnsRecord.isEmpty) {
       Seq(ValidationError("DNS_RECORD", "Dns Record shouldn't be empty"))
     } else {
       Seq.empty
