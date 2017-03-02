@@ -7,7 +7,7 @@ import org.scalatest.FunSuite
 import scala.annotation.meta.field
 
 class PollerPluginTest extends FunSuite {
-  test("validateRepositoryConfiguration"){
+  test("validateRepositoryConfiguration") {
     val jsonString =
       """
         |{

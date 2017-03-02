@@ -1,6 +1,6 @@
 package fr.ramiro.gocd.plugins
 
-import org.json4s.{JObject, JValue, Writer}
+import org.json4s.{ JObject, JValue, Writer }
 import org.json4s.JsonDSL._
 import scala.reflect.runtime.universe._
 

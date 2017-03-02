@@ -10,7 +10,8 @@ version      := "0.1.0-SNAPSHOT"
 
 libraryDependencies ++= Seq(
   scalaTest % Test,
-  "cd.go.plugin" % "go-plugin-api" % "17.2.0",
+  "cd.go.plugin" % "go-plugin-api" % "17.2.0" % "provided",
+  //"com.thoughtworks.paranamer" % "paranamer" % "2.8",
   "org.json4s" %% "json4s-jackson" % "3.5.0",
   "org.scala-lang" % "scala-reflect" % scalaVersion.value,
   "dnsjava" % "dnsjava" % "2.1.8"

@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<go-plugin id="ramiro-fr.gocd-dns-poller" version="1">
+    <about>
+        <name>gocd-dns-poller</name>
+        <version>0.1.0</version>
+        <target-go-version>17.0</target-go-version>
+        <description>DNS trigger</description>
+        <vendor>
+            <name>Ramiro</name>
+            <url>ramiro.fr</url>
+        </vendor>
+        <target-os>
+            <value>Linux</value>
+            <value>Windows</value>
+        </target-os>
+    </about>
+</go-plugin>

@@ -3,9 +3,11 @@ package fr.ramiro.gocd.dns.poller
 import java.net.InetAddress
 
 import com.thoughtworks.go.plugin.api.GoApplicationAccessor
+import com.thoughtworks.go.plugin.api.annotation.Extension
 import fr.ramiro.gocd.plugins._
 
-class GoPluginDnsPoller extends PollerPlugin[DnsServerConfig, DnsRecordConfig]("GoPluginDnsPoller", "17.0") {
+@Extension
+class GoPluginDnsPoller extends PollerPlugin[DnsServerConfig, DnsRecordConfig]("GoPluginDnsPoller", "1.0") {
 
   override def validateRepositoryConfiguration(repositoryConfig: DnsServerConfig): Seq[ValidationError] = {
     if (repositoryConfig.dnsServer.isEmpty) {
