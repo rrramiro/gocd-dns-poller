@@ -1,5 +1,6 @@
 package fr.ramiro.gocd.dns.poller
 
+import java.util.Date
 import com.thoughtworks.go.plugin.api.GoApplicationAccessor
 import fr.ramiro.gocd.plugins._
 import org.scalatest.FunSuite
@@ -9,8 +10,7 @@ import scala.annotation.meta.field
 class PollerPluginTest extends FunSuite {
   test("validateRepositoryConfiguration") {
     val jsonString =
-      """
-        |{
+      """{
         |    "repository-configuration": {
         |        "REPO_URL": {
         |            "value": "http://localhost.com"
@@ -49,5 +49,7 @@ class PollerPluginTest extends FunSuite {
     override def validatePackageConfiguration(repositoryConfig: RepoConfig, packageConfig: PackConfig): Seq[ValidationError] = Seq.empty
     override def checkRepositoryConnection(repositoryConfig: RepoConfig): StatusResponse = StatusResponse(status = true, Seq.empty)
     override def checkPackageConnection(repositoryConfig: RepoConfig, packageConfig: PackConfig): StatusResponse = StatusResponse(status = true, Seq.empty)
+    override def latestRevision(repositoryConfig: RepoConfig, packageConfig: PackConfig): PackageRevision = PackageRevision("1.0", new Date)
+    override def latestRevisionSince(repositoryConfig: RepoConfig, packageConfig: PackConfig, previousRevision: PackageRevision): PackageRevision = PackageRevision("1.0", new Date)
   }
 }

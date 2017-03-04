@@ -43,8 +43,19 @@ abstract class PollerPlugin[RepositoryConfig, PackageConfig](pluginName: String,
             toPackageConfig(requestMessage.requestBody)
           )
         ))))
-        case "latest-revision" => None
-        case "latest-revision-since" => None
+        case "latest-revision" => Some(success(compact(asJValue(
+          latestRevision(
+            toRepositoryConfig(requestMessage.requestBody),
+            toPackageConfig(requestMessage.requestBody)
+          )
+        ))))
+        case "latest-revision-since" => Some(success(compact(asJValue(
+          latestRevisionSince(
+            toRepositoryConfig(requestMessage.requestBody),
+            toPackageConfig(requestMessage.requestBody),
+            toPreviousRevision(requestMessage.requestBody)
+          )
+        ))))
         case _ => None
       }
     } catch {
@@ -73,6 +84,10 @@ abstract class PollerPlugin[RepositoryConfig, PackageConfig](pluginName: String,
 
   def toPackageConfig(requestBody: String): PackageConfig = requestToJObject[PackageConfig](requestBody, "package-configuration", paramsToField(packageFields))
 
+  def toPreviousRevision(requestBody: String): PackageRevision = {
+    (parse(StringInput(requestBody)) \ "previous-revision").as[PackageRevision]
+  }
+
   def validateRepositoryConfiguration(repositoryConfig: RepositoryConfig): Seq[ValidationError]
 
   def validatePackageConfiguration(repositoryConfig: RepositoryConfig, packageConfig: PackageConfig): Seq[ValidationError]
@@ -80,4 +95,8 @@ abstract class PollerPlugin[RepositoryConfig, PackageConfig](pluginName: String,
   def checkRepositoryConnection(repositoryConfig: RepositoryConfig): StatusResponse
 
   def checkPackageConnection(repositoryConfig: RepositoryConfig, packageConfig: PackageConfig): StatusResponse
+
+  def latestRevision(repositoryConfig: RepositoryConfig, packageConfig: PackageConfig): PackageRevision
+
+  def latestRevisionSince(repositoryConfig: RepositoryConfig, packageConfig: PackageConfig, previousRevision: PackageRevision): PackageRevision
 }

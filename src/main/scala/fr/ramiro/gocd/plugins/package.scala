@@ -1,7 +1,13 @@
 package fr.ramiro.gocd
 
-import org.json4s.{ JValue, Writer }
+import java.text.SimpleDateFormat
+import java.util.Date
+
+import org.json4s.JsonAST.JString
+import org.json4s.{ DefaultReaders, JObject, JValue, Reader, Writer }
 import org.json4s.JsonDSL._
+
+import scala.language.implicitConversions
 
 package object plugins {
   case class ValidationError(key: String, message: String)
@@ -17,6 +23,44 @@ package object plugins {
   object StatusResponse {
     implicit object StatusResponseWriter extends Writer[StatusResponse] {
       override def write(obj: StatusResponse): JValue = ("status" -> (if (obj.status) "success" else "failure")) ~ ("messages" -> obj.messages)
+    }
+  }
+
+  case class PackageRevision(
+    revision: String,
+    timestamp: Date,
+    user: Option[String] = None,
+    revisionComment: Option[String] = None,
+    trackbackUrl: Option[String] = None,
+    data: Map[String, String] = Map.empty
+  )
+
+  object PackageRevision {
+    def dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")
+
+    implicit def goDateWriter(obj: Date): JValue = JString(dateFormat.format(obj))
+
+    implicit object PackageRevisionWriter extends Writer[PackageRevision] with Reader[PackageRevision] with DefaultReaders {
+      override def write(obj: PackageRevision): JValue = {
+        ("revision" -> obj.revision) ~
+          ("timestamp" -> obj.timestamp) ~
+          obj.user.fold(JObject()) {
+            "user" -> _
+          } ~ obj.revisionComment.fold(JObject()) {
+            "revisionComment" -> _
+          } ~ obj.trackbackUrl.fold(JObject()) {
+            "trackbackUrl" -> _
+          } ~ ("data" -> obj.data)
+      }
+
+      override def read(value: JValue): PackageRevision = PackageRevision(
+        revision = (value \ "revision").as[String],
+        timestamp = dateFormat.parse((value \ "timestamp").as[String]),
+        user = (value \ "user").as[Option[String]],
+        revisionComment = (value \ "revisionComment").as[Option[String]],
+        trackbackUrl = (value \ "trackbackUrl").as[Option[String]],
+        data = (value \ "trackbackUrl").as[Map[String, String]]
+      )
     }
   }
 

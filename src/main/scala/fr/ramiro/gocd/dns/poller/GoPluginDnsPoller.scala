@@ -1,7 +1,7 @@
 package fr.ramiro.gocd.dns.poller
 
 import java.net.InetAddress
-
+import java.util.Date
 import com.thoughtworks.go.plugin.api.GoApplicationAccessor
 import com.thoughtworks.go.plugin.api.annotation.Extension
 import fr.ramiro.gocd.plugins._
@@ -40,4 +40,7 @@ class GoPluginDnsPoller extends PollerPlugin[DnsServerConfig, DnsRecordConfig]("
 
   override def initializeGoApplicationAccessor(goApplicationAccessor: GoApplicationAccessor): Unit = {}
 
+  override def latestRevision(repositoryConfig: DnsServerConfig, packageConfig: DnsRecordConfig): PackageRevision = PackageRevision("1.0", new Date)
+
+  override def latestRevisionSince(repositoryConfig: DnsServerConfig, packageConfig: DnsRecordConfig, previousRevision: PackageRevision): PackageRevision = PackageRevision("1.0", new Date)
 }
