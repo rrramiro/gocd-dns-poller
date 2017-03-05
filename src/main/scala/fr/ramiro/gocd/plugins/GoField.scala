@@ -15,10 +15,12 @@ case class GoField(
 
 object GoField {
 
-  def listGoFields[T](implicit t: TypeTag[T], tt: TypeTag[GoField]): List[(String, GoField)] = {
-    val cm = t.mirror
-    val im = cm reflect (cm reflectModule (cm classSymbol cm.runtimeClass(tt.tpe)).companion.asModule).instance
-    val const = cm.reflectClass(tt.tpe.typeSymbol.asClass).reflectConstructor(tt.tpe.decl(termNames.CONSTRUCTOR).asMethod)
+  def listGoFields[T](clazz: Class[T]): List[(String, GoField)] = {
+    val cm = runtimeMirror(clazz.getClassLoader)
+    val ttt = cm.classSymbol(clazz).toType
+    val tf = cm.classSymbol(classOf[GoField]).toType
+    val im = cm reflect (cm reflectModule (cm classSymbol cm.runtimeClass(tf)).companion.asModule).instance
+    val const = cm.reflectClass(tf.typeSymbol.asClass).reflectConstructor(tf.decl(termNames.CONSTRUCTOR).asMethod)
 
     def getGoFieldInstance(goFieldAnnotation: Annotation) = {
       const {
@@ -32,7 +34,7 @@ object GoField {
       }.asInstanceOf[GoField]
     }
 
-    typeOf[T]
+    ttt
       .members
       .collect { case s: TermSymbol => s }
       .filter(s => s.isVal || s.isVar)

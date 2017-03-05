@@ -11,10 +11,14 @@ import org.json4s.JsonDSL._
 import org.json4s.jackson.JsonMethods._
 import scala.reflect.runtime.universe._
 
-abstract class PollerPlugin[RepositoryConfig, PackageConfig](pluginName: String, managedVersions: String*)(implicit rctt: TypeTag[RepositoryConfig], pctt: TypeTag[PackageConfig], rcmf: scala.reflect.Manifest[RepositoryConfig], pcmf: scala.reflect.Manifest[PackageConfig])
+
+abstract class PollerPlugin[RepositoryConfig, PackageConfig](pluginName: String, managedVersions: String*)(implicit rcmf: scala.reflect.Manifest[RepositoryConfig], pcmf: scala.reflect.Manifest[PackageConfig])
     extends GoPlugin with DefaultReaders with DefaultWriters {
-  private val repositoryFields: Seq[(String, GoField)] = GoField.listGoFields[RepositoryConfig]
-  private val packageFields = GoField.listGoFields[PackageConfig]
+  private val mirror = runtimeMirror(getClass.getClassLoader)
+  private val rcClazz = mirror.runtimeClass(implicitly[TypeTag[RepositoryConfig]].tpe.typeSymbol.asClass).asInstanceOf[Class[RepositoryConfig]]
+  private val pcClazz = mirror.runtimeClass(implicitly[TypeTag[PackageConfig]].tpe.typeSymbol.asClass).asInstanceOf[Class[PackageConfig]]
+  private val repositoryFields = GoField.listGoFields[RepositoryConfig](rcClazz)
+  private val packageFields = GoField.listGoFields[PackageConfig](pcClazz)
 
   override def handle(requestMessage: GoPluginApiRequest): GoPluginApiResponse = {
     try {

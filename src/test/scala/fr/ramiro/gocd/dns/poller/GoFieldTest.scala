@@ -3,7 +3,7 @@ package fr.ramiro.gocd.dns.poller
 import fr.ramiro.gocd.plugins.{ GoField, PackageRevision, StatusResponse }
 import org.json4s.jackson.JsonMethods.{ asJValue, pretty }
 import org.scalatest.FunSuite
-
+import scala.reflect.runtime.universe._
 import scala.annotation.meta.field
 
 class GoFieldTest extends FunSuite {
@@ -17,7 +17,7 @@ class GoFieldTest extends FunSuite {
       GoField(name = "FIELD_1", displayName = "Field 1"),
       GoField(name = "FIELD_2", displayName = "Field 2", displayOrder = 1)
     )
-    val annotations = GoField.listGoFields[ConfigurationObject].toMap
+    val annotations = GoField.listGoFields[ConfigurationObject](classOf[ConfigurationObject]).toMap
     assert(annotations.values.toSet === expected)
   }
 
