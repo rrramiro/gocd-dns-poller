@@ -64,4 +64,20 @@ package object plugins {
     }
   }
 
+  implicit object ConfigurationFieldWriter extends Writer[Seq[GoField]] {
+    override def write(fields: Seq[GoField]): JValue = {
+      fields.foldRight(JObject()) {
+        (obj, a) =>
+          a ~ {
+            obj.name -> {
+              ("display-name" -> obj.displayName) ~
+                ("display-order" -> obj.displayOrder) ~
+                ("required" -> obj.required) ~
+                ("part-of-identity" -> obj.partOfIdentity) ~
+                ("default-value" -> obj.defaultValue)
+            }
+          }
+      }
+    }
+  }
 }

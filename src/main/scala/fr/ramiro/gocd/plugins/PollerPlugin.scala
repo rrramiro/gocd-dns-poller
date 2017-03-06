@@ -18,8 +18,8 @@ abstract class PollerPlugin[RepositoryConfig, PackageConfig](pluginName: String,
   private val mirror = runtimeMirror(getClass.getClassLoader)
   private val pcmf: scala.reflect.Manifest[PackageConfig] = Manifest.classType(pcClazz)
   private val rcmf: scala.reflect.Manifest[RepositoryConfig] = Manifest.classType(rcClazz)
-  private val repositoryFields = GoField.listGoFields[RepositoryConfig](typeToTypeTag[RepositoryConfig](mirror.classSymbol(rcClazz).toType))
-  private val packageFields = GoField.listGoFields[PackageConfig](typeToTypeTag[PackageConfig](mirror.classSymbol(pcClazz).toType))
+  private val repositoryFields = ConfigField.listGoFields[RepositoryConfig](typeToTypeTag[RepositoryConfig](mirror.classSymbol(rcClazz).toType))
+  private val packageFields = ConfigField.listGoFields[PackageConfig](typeToTypeTag[PackageConfig](mirror.classSymbol(pcClazz).toType))
 
   private def typeToTypeTag[T](tpe: Type): TypeTag[T] = {
     TypeTag(mirror, new reflect.api.TypeCreator {

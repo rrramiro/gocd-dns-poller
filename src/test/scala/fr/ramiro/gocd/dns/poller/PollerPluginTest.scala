@@ -36,12 +36,12 @@ class PollerPluginTest extends FunSuite {
   }
 
   case class RepoConfig(
-    @(GoField @field)("REPO_URL", "Repo URL") repoUrl: String,
-    @(GoField @field)("USERNAME", "Username") username: String,
-    @(GoField @field)("PASSWORD", "Password") password: String
+    @(GoField @field)(name = "REPO_URL", displayName = "Repo URL") repoUrl: String,
+    @(GoField @field)(name = "USERNAME", displayName = "Username") username: String,
+    @(GoField @field)(name = "PASSWORD", displayName = "Password") password: String
   )
 
-  case class PackConfig(@(GoField @field)("PACKAGE_SPEC", "Package Spec") packageSpec: String)
+  case class PackConfig(@(GoField @field)(name = "PACKAGE_SPEC", displayName = "Package Spec") packageSpec: String)
 
   val plugin = new PollerPlugin[RepoConfig, PackConfig]("MockPlugin", Seq("1.0"), classOf[RepoConfig], classOf[PackConfig]) {
     override def initializeGoApplicationAccessor(goApplicationAccessor: GoApplicationAccessor): Unit = {}

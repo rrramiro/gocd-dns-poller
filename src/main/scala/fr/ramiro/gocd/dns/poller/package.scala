@@ -7,8 +7,8 @@ package object poller {
 
   case class DnsServerConfig(
     @(GoField @field)(
-      "DNS_SERVER",
-      "DNS Server"
+      name = "DNS_SERVER",
+      displayName = "DNS Server"
     ) dnsServer: String
   )
 
@@ -16,7 +16,7 @@ package object poller {
     @(GoField @field)(
       name = "DNS_RECORD",
       displayName = "DNS Record",
-      defaultValue = Some("www.google.com")
+      defaultValue = "www.google.com"
     ) dnsRecord: String
   )
 
