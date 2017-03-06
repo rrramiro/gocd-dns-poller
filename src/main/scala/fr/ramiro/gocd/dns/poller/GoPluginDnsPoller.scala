@@ -7,7 +7,7 @@ import com.thoughtworks.go.plugin.api.annotation.Extension
 import fr.ramiro.gocd.plugins._
 
 @Extension
-class GoPluginDnsPoller extends PollerPlugin[DnsServerConfig, DnsRecordConfig]("GoPluginDnsPoller", "1.0") {
+class GoPluginDnsPoller extends PollerPlugin[DnsServerConfig, DnsRecordConfig]("GoPluginDnsPoller", Seq("1.0"), classOf[DnsServerConfig], classOf[DnsRecordConfig]) {
 
   override def validateRepositoryConfiguration(repositoryConfig: DnsServerConfig): Seq[ValidationError] = {
     if (repositoryConfig.dnsServer.isEmpty) {

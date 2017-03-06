@@ -43,7 +43,7 @@ class PollerPluginTest extends FunSuite {
 
   case class PackConfig(@(GoField @field)("PACKAGE_SPEC", "Package Spec") packageSpec: String)
 
-  val plugin = new PollerPlugin[RepoConfig, PackConfig]("MockPlugin", "1.0") {
+  val plugin = new PollerPlugin[RepoConfig, PackConfig]("MockPlugin", Seq("1.0"), classOf[RepoConfig], classOf[PackConfig]) {
     override def initializeGoApplicationAccessor(goApplicationAccessor: GoApplicationAccessor): Unit = {}
     override def validateRepositoryConfiguration(repositoryConfig: RepoConfig): Seq[ValidationError] = Seq.empty
     override def validatePackageConfiguration(repositoryConfig: RepoConfig, packageConfig: PackConfig): Seq[ValidationError] = Seq.empty

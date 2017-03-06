@@ -17,7 +17,7 @@ class GoFieldTest extends FunSuite {
       GoField(name = "FIELD_1", displayName = "Field 1"),
       GoField(name = "FIELD_2", displayName = "Field 2", displayOrder = 1)
     )
-    val annotations = GoField.listGoFields[ConfigurationObject](classOf[ConfigurationObject]).toMap
+    val annotations = GoField.listGoFields[ConfigurationObject](implicitly[TypeTag[ConfigurationObject]]).toMap
     assert(annotations.values.toSet === expected)
   }
 

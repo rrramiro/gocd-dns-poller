@@ -10,15 +10,25 @@ import org.json4s._
 import org.json4s.JsonDSL._
 import org.json4s.jackson.JsonMethods._
 import scala.reflect.runtime.universe._
+import scala.reflect
 
-
-abstract class PollerPlugin[RepositoryConfig, PackageConfig](pluginName: String, managedVersions: String*)(implicit rcmf: scala.reflect.Manifest[RepositoryConfig], pcmf: scala.reflect.Manifest[PackageConfig])
+abstract class PollerPlugin[RepositoryConfig, PackageConfig](pluginName: String, managedVersions: Seq[String], rcClazz: Class[RepositoryConfig], pcClazz: Class[PackageConfig])
     extends GoPlugin with DefaultReaders with DefaultWriters {
+
   private val mirror = runtimeMirror(getClass.getClassLoader)
-  private val rcClazz = mirror.runtimeClass(implicitly[TypeTag[RepositoryConfig]].tpe.typeSymbol.asClass).asInstanceOf[Class[RepositoryConfig]]
-  private val pcClazz = mirror.runtimeClass(implicitly[TypeTag[PackageConfig]].tpe.typeSymbol.asClass).asInstanceOf[Class[PackageConfig]]
-  private val repositoryFields = GoField.listGoFields[RepositoryConfig](rcClazz)
-  private val packageFields = GoField.listGoFields[PackageConfig](pcClazz)
+  private val pcmf: scala.reflect.Manifest[PackageConfig] = Manifest.classType(pcClazz)
+  private val rcmf: scala.reflect.Manifest[RepositoryConfig] = Manifest.classType(rcClazz)
+  private val repositoryFields = GoField.listGoFields[RepositoryConfig](typeToTypeTag[RepositoryConfig](mirror.classSymbol(rcClazz).toType))
+  private val packageFields = GoField.listGoFields[PackageConfig](typeToTypeTag[PackageConfig](mirror.classSymbol(pcClazz).toType))
+
+  private def typeToTypeTag[T](tpe: Type): TypeTag[T] = {
+    TypeTag(mirror, new reflect.api.TypeCreator {
+      def apply[U <: reflect.api.Universe with Singleton](m: reflect.api.Mirror[U]) = {
+        assert(m eq mirror, s"TypeTag[$tpe] defined in $mirror cannot be migrated to $m.")
+        tpe.asInstanceOf[U#Type]
+      }
+    })
+  }
 
   override def handle(requestMessage: GoPluginApiRequest): GoPluginApiResponse = {
     try {
@@ -84,9 +94,9 @@ abstract class PollerPlugin[RepositoryConfig, PackageConfig](pluginName: String,
 
   private def paramsToField(fields: Seq[(String, GoField)]): (String => String) = fields.map { case (field, param) => param.name -> field }.toMap
 
-  def toRepositoryConfig(requestBody: String): RepositoryConfig = requestToJObject[RepositoryConfig](requestBody, "repository-configuration", paramsToField(repositoryFields))
+  def toRepositoryConfig(requestBody: String): RepositoryConfig = requestToJObject[RepositoryConfig](requestBody, "repository-configuration", paramsToField(repositoryFields))(rcmf)
 
-  def toPackageConfig(requestBody: String): PackageConfig = requestToJObject[PackageConfig](requestBody, "package-configuration", paramsToField(packageFields))
+  def toPackageConfig(requestBody: String): PackageConfig = requestToJObject[PackageConfig](requestBody, "package-configuration", paramsToField(packageFields))(pcmf)
 
   def toPreviousRevision(requestBody: String): PackageRevision = {
     (parse(StringInput(requestBody)) \ "previous-revision").as[PackageRevision]

@@ -1,7 +1,6 @@
 package fr.ramiro.gocd.dns
 
 import fr.ramiro.gocd.plugins.GoField
-
 import scala.annotation.meta.field
 
 package object poller {
