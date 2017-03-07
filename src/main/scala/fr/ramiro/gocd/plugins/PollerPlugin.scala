@@ -1,5 +1,6 @@
 package fr.ramiro.gocd.plugins
 
+import com.thoughtworks.go.plugin.api.logging.Logger
 import com.thoughtworks.go.plugin.api.{ GoPlugin, GoPluginIdentifier }
 import com.thoughtworks.go.plugin.api.request.GoPluginApiRequest
 import com.thoughtworks.go.plugin.api.response.DefaultGoPluginApiResponse.{ error, success }
@@ -23,7 +24,7 @@ object PollerPlugin {
 
 abstract class PollerPlugin[RepositoryConfig, PackageConfig](pluginName: String, managedVersions: Seq[String], rcClazz: Class[RepositoryConfig], pcClazz: Class[PackageConfig])
     extends GoPlugin with DefaultReaders with DefaultWriters {
-
+  private val logger = Logger.getLoggerFor(classOf[PollerPlugin[RepositoryConfig, PackageConfig]])
   private val pcmf: scala.reflect.Manifest[PackageConfig] = Manifest.classType(pcClazz)
   private val rcmf: scala.reflect.Manifest[RepositoryConfig] = Manifest.classType(rcClazz)
   private val repositoryFields = PollerPlugin.listGoFields[RepositoryConfig](rcClazz)
@@ -31,6 +32,7 @@ abstract class PollerPlugin[RepositoryConfig, PackageConfig](pluginName: String,
 
   override def handle(requestMessage: GoPluginApiRequest): GoPluginApiResponse = {
     try {
+      logger.info(s"Received request [${requestMessage.requestName()}]: ${requestMessage.requestBody()}")
       requestMessage.requestName match {
         case "repository-configuration" => Some(success(compact(asJValue(repositoryFields.map { _._2 }))))
         case "package-configuration" => Some(success(compact(asJValue(packageFields.map { _._2 }))))
@@ -69,7 +71,9 @@ abstract class PollerPlugin[RepositoryConfig, PackageConfig](pluginName: String,
             toPreviousRevision(requestMessage.requestBody)
           )
         ))))
-        case _ => None
+        case _ =>
+          logger.warn(s"Unhandled request [${requestMessage.requestName()}]: ${requestMessage.requestBody()}")
+          None
       }
     } catch {
       case t: Throwable =>

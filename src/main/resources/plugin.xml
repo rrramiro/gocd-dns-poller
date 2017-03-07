@@ -3,7 +3,7 @@
     <about>
         <name>gocd-dns-poller</name>
         <version>0.1.0</version>
-        <target-go-version>17.0</target-go-version>
+        <target-go-version>15.2.0</target-go-version>
         <description>DNS trigger</description>
         <vendor>
             <name>Ramiro</name>
