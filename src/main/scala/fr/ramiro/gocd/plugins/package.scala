@@ -73,8 +73,13 @@ package object plugins {
               ("display-name" -> obj.displayName) ~
                 ("display-order" -> obj.displayOrder) ~
                 ("required" -> obj.required) ~
-                ("part-of-identity" -> obj.partOfIdentity) ~
-                ("default-value" -> obj.defaultValue)
+                ("part-of-identity" -> obj.partOfIdentity) ~ {
+                  if (obj.defaultValue.nonEmpty) {
+                    "default-value" -> obj.defaultValue: JObject
+                  } else {
+                    JObject()
+                  }
+                }
             }
           }
       }

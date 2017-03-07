@@ -9,26 +9,25 @@ import org.json4s.jackson.JsonMethods.{ asJValue, compact }
 import org.json4s._
 import org.json4s.JsonDSL._
 import org.json4s.jackson.JsonMethods._
-import scala.reflect.runtime.universe._
-import scala.reflect
+
+object PollerPlugin {
+  def listGoFields[T](clazz: Class[T]): List[(String, GoField)] = {
+    clazz.getDeclaredFields.flatMap {
+      f =>
+        Option(f.getAnnotation(classOf[GoField])).map {
+          f.getName -> _
+        }
+    }.toList
+  }
+}
 
 abstract class PollerPlugin[RepositoryConfig, PackageConfig](pluginName: String, managedVersions: Seq[String], rcClazz: Class[RepositoryConfig], pcClazz: Class[PackageConfig])
     extends GoPlugin with DefaultReaders with DefaultWriters {
 
-  private val mirror = runtimeMirror(getClass.getClassLoader)
   private val pcmf: scala.reflect.Manifest[PackageConfig] = Manifest.classType(pcClazz)
   private val rcmf: scala.reflect.Manifest[RepositoryConfig] = Manifest.classType(rcClazz)
-  private val repositoryFields = ConfigField.listGoFields[RepositoryConfig](typeToTypeTag[RepositoryConfig](mirror.classSymbol(rcClazz).toType))
-  private val packageFields = ConfigField.listGoFields[PackageConfig](typeToTypeTag[PackageConfig](mirror.classSymbol(pcClazz).toType))
-
-  private def typeToTypeTag[T](tpe: Type): TypeTag[T] = {
-    TypeTag(mirror, new reflect.api.TypeCreator {
-      def apply[U <: reflect.api.Universe with Singleton](m: reflect.api.Mirror[U]) = {
-        assert(m eq mirror, s"TypeTag[$tpe] defined in $mirror cannot be migrated to $m.")
-        tpe.asInstanceOf[U#Type]
-      }
-    })
-  }
+  private val repositoryFields = PollerPlugin.listGoFields[RepositoryConfig](rcClazz)
+  private val packageFields = PollerPlugin.listGoFields[PackageConfig](pcClazz)
 
   override def handle(requestMessage: GoPluginApiRequest): GoPluginApiResponse = {
     try {
